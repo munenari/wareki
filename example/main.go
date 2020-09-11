@@ -15,4 +15,5 @@ func main() {
 		return
 	}
 	fmt.Printf("%s%02d年%s", e.KanjiName, t.YearEra(), t.Format("01月02日"))
+	// output: 令和01年10月02日
 }

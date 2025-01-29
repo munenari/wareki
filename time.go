@@ -4,33 +4,21 @@ import (
 	"time"
 )
 
-// Time struct
 type Time struct {
 	time.Time
 }
 
 // New return wareki.Time in JST time zone
 func New(t time.Time) Time {
-	return Time{t.In(locJST)}
+	return Time{t.In(JST)}
 }
 
 // Date returns wareki.Time by func that looks like time.Date
+//
+// Date("R", 1, 10, 2, 0, 0, 0, 0, JST)
+// Date("令和", 1, 10, 2, 0, 0, 0, 0, JST)
 func Date(era string, year int, month time.Month, day, hour, min, sec, nsec int, loc *time.Location) Time {
-	year = func(y int) int {
-		if e, ok := Eras[eraID(era)]; ok {
-			return y + (e.StartedAt.Year() - 1)
-		}
-		for _, n := range EraOrder {
-			e, ok := Eras[n]
-			if !ok {
-				continue
-			}
-			if e.ShortName == era || e.KanjiName == era {
-				return y + (e.StartedAt.Year() - 1)
-			}
-		}
-		return y
-	}(year)
+	year = getYearInEra(era, year)
 	return New(time.Date(year, month, day, hour, min, sec, nsec, loc))
 }
 
@@ -56,4 +44,20 @@ func (t Time) YearEra() int {
 		return -1
 	}
 	return t.Year() - (e.StartedAt.Year() - 1)
+}
+
+func getYearInEra(era string, year int) (eraYear int) {
+	if e, ok := Eras[eraID(era)]; ok {
+		return year + (e.StartedAt.Year() - 1)
+	}
+	for _, n := range EraOrder {
+		e, ok := Eras[n]
+		if !ok {
+			continue
+		}
+		if e.ShortName == era || e.KanjiName == era {
+			return year + (e.StartedAt.Year() - 1)
+		}
+	}
+	return year
 }
